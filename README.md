@@ -96,6 +96,11 @@ ocr.sh /path/to/image.png
 # Result is copied to the clipboard; notification is shown.
 ```
 
+Preserve the input file (useful if you pass a non-temp image):
+```bash
+ocr.sh --keep /path/to/image.png
+```
+
 
 ## ⚙️ Configuration
 
@@ -110,7 +115,9 @@ ocr.sh /path/to/image.png
 
 - **Wayland vs X11**: The script prefers `wl-copy` (Wayland) and falls back to `xclip` (X11).
 - **ImageMagick policies**: Some distros restrict certain operations via ImageMagick’s policy file. If you hit errors, check `/etc/ImageMagick-*/policy.xml`.
+- **ImageMagick command**: The script uses `magick` and falls back to `convert` if needed.
 - **Input formats**: The `.desktop` entry registers for `image/png`. Extend `MimeType` if you want JPEG, etc.
+- **Temp cleanup**: By default, input files are only deleted when they live under `/tmp`. Use `--keep` to always preserve the input.
 
 
 
