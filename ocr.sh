@@ -4,6 +4,13 @@ CR=$(printf '\r')
 KEEP_INPUT=false
 IMAGE=""
 
+decode_file_uri() {
+  local uri="$1"
+  uri="${uri#file://}"
+  uri="${uri#localhost/}"
+  printf '%b' "${uri//%/\\x}"
+}
+
 # Select language packs for Tesseract
 LANG="tam_new+eng" # Default language is English, you can modify this line like "eng+deu" for English and German etc.
 
@@ -40,6 +47,10 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+if [ -n "$IMAGE" ] && [[ "$IMAGE" == file://* ]]; then
+  IMAGE="$(decode_file_uri "$IMAGE")"
+fi
 
 if [ -z "$IMAGE" ] || [ ! -f "$IMAGE" ]; then
   notify-send -i dialog-error "OCR Error" "No image file received"
