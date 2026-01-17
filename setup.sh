@@ -46,6 +46,41 @@ as_root() {
   fi
 }
 
+download_file() {
+  local url="$1" dest="$2"
+  if need_cmd curl; then
+    curl -fL --retry 3 --retry-delay 1 -o "$dest" "$url"
+  elif need_cmd wget; then
+    wget -O "$dest" "$url"
+  else
+    err "Neither 'curl' nor 'wget' is available to download: $url"
+    exit 1
+  fi
+}
+
+find_tessdata_dir() {
+  local dir
+  dir="$(tesseract --list-langs 2>/dev/null | sed -n 's/.*"\(.*\)".*/\1/p' | head -n 1)"
+  if [ -n "$dir" ] && [ -d "$dir" ]; then
+    echo "$dir"
+    return
+  fi
+
+  for dir in \
+    /usr/share/tesseract-ocr/5/tessdata \
+    /usr/share/tesseract-ocr/4.00/tessdata \
+    /usr/share/tesseract-ocr/tessdata \
+    /usr/share/tessdata \
+    /usr/local/share/tessdata; do
+    if [ -d "$dir" ]; then
+      echo "$dir"
+      return
+    fi
+  done
+
+  echo ""
+}
+
 detect_pkg_mgr() {
   if need_cmd apt-get; then echo "apt"; return
   elif need_cmd dnf; then echo "dnf"; return
@@ -156,6 +191,33 @@ install_deps() {
   ok "Dependencies installed."
 }
 
+install_tamil_traineddata() {
+  local tessdata_dir
+  tessdata_dir="$(find_tessdata_dir)"
+  if [ -z "$tessdata_dir" ]; then
+    warn "Could not determine Tesseract tessdata directory. Skipping Tamil language download."
+    return
+  fi
+
+  local url="https://github.com/khaleeljageer/tesseract-gt-builder/raw/refs/heads/main/model/latest/tam_new.traineddata"
+  local tmp_file
+  tmp_file="$(mktemp /tmp/tam_new.traineddata.XXXXXX)"
+
+  hr
+  info "${BOLD}Downloading Tamil traineddata:${RESET} ${FG_WHT}tam_new.traineddata${RESET}"
+  say "Destination: ${FG_WHT}${tessdata_dir}${RESET}"
+
+  download_file "$url" "$tmp_file"
+
+  if [ -w "$tessdata_dir" ]; then
+    mv -f "$tmp_file" "$tessdata_dir/tam_new.traineddata"
+  else
+    as_root mv -f "$tmp_file" "$tessdata_dir/tam_new.traineddata"
+  fi
+
+  ok "Installed Tamil traineddata to: ${tessdata_dir}/tam_new.traineddata"
+}
+
 write_desktop_file() {
   local install_path="$1"   # full path to ocr.sh
   local desktop_dir="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
@@ -204,6 +266,7 @@ fi
 PKG_MGR="$(detect_pkg_mgr)"
 confirm_install "$PKG_MGR"   # sets __CLIP_PKG and __PKG_LIST
 install_deps "$PKG_MGR" "$__PKG_LIST"
+install_tamil_traineddata
 
 # Choose installation directory
 DEFAULT_INSTALL_DIR="$HOME/.local/bin"

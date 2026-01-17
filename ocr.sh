@@ -5,7 +5,7 @@ KEEP_INPUT=false
 IMAGE=""
 
 # Select language packs for Tesseract
-LANG="eng" # Default language is English, you can modify this line like "eng+deu" for English and German etc.
+LANG="tam_new+eng" # Default language is English, you can modify this line like "eng+deu" for English and German etc.
 
 # Cleanup function to remove temp and possibly original image
 cleanup() {

@@ -28,6 +28,7 @@ In Spectacle select **Extract** or right click an image → **Extract Text** →
 - **desktop-file-utils** (to update the desktop database)
 
 > These are installed automatically by the setup script below.
+> The setup script also downloads `tam_new.traineddata` for Tamil and installs it into your Tesseract `tessdata` directory.
 
 
 
@@ -108,6 +109,7 @@ ocr.sh --keep /path/to/image.png
 - Examples:
   - English only: `LANG="eng"`
   - English + German: `LANG="eng+deu"`
+  - English + Tamil (tam_new): `LANG="eng+tam_new"`
   - Add other Tesseract langs if installed (e.g., `spa`, `fra`, etc.).
 
 
